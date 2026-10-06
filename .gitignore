@@ -14,6 +14,7 @@ node_modules/
 
 # Logs
 *.log
+!contributions.log
 logs/
 
 # IDE / OS
