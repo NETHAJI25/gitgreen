@@ -24,10 +24,11 @@ permissions:
 
 jobs:
   ping:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repo
-        uses: actions/checkout@v4
+        # Pinned to the commit behind the v4 tag (repo policy requires full SHA).
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Verify GIT_USER_EMAIL secret exists
         run: |
