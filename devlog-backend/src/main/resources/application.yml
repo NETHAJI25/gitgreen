@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:devlogdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID:dev-placeholder-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:dev-placeholder-secret}
+            scope:
+              - repo
+              - user:email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: GitHub
+
+server:
+  port: 8080
+
+github:
+  api:
+    base-url: https://api.github.com
+    timeout: 5000
+
+devlog:
+  journal:
+    path: logs
+    java-practice-path: java-practice
+  secret-scanner:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.devlog.devlog: DEBUG

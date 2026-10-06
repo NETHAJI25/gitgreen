@@ -1,0 +1,60 @@
+name: Daily activity ping
+
+# Keeps the contribution graph active with one small commit per day.
+# Commits land on the DEFAULT branch and are authored with YOUR email
+# (from the GIT_USER_EMAIL secret) so GitHub counts them.
+#
+# Setup (one time):
+#   1. Push this repo to GitHub (default branch, e.g. main).
+#   2. Repo Settings -> Secrets and variables -> Actions -> New repository secret:
+#        Name: GIT_USER_EMAIL
+#        Value: the email address verified on your GitHub account
+#      (Optional) New repository variable:
+#        Name: GIT_USER_NAME  Value: your GitHub username
+#   3. Actions tab -> "Daily activity ping" -> Run workflow (tests it immediately).
+
+on:
+  schedule:
+    # Once a day at ~09:30 UTC. GitHub uses UTC; exact minute may drift.
+    - cron: '30 9 * * *'
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Verify GIT_USER_EMAIL secret exists
+        run: |
+          if [ -z "${{ secrets.GIT_USER_EMAIL }}" ]; then
+            echo "::error::Repository secret GIT_USER_EMAIL is missing. Add your GitHub-verified email as a secret named GIT_USER_EMAIL."
+            exit 1
+          fi
+
+      - name: Configure git author (must match your GitHub account)
+        run: |
+          git config user.name "${{ vars.GIT_USER_NAME }}"
+          git config user.email "${{ secrets.GIT_USER_EMAIL }}"
+          if [ -z "$(git config user.name)" ]; then
+            git config user.name "devlog-bot"
+          fi
+
+      - name: Append daily entry
+        run: |
+          date -u +"%Y-%m-%d %H:%M:%S UTC - daily activity ping" >> contributions.log
+          git add contributions.log
+
+      - name: Commit and push
+        run: |
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore: daily activity $(date -u +%F)"
+          git pull --rebase origin "${{ github.ref_name }}"
+          git push origin "HEAD:${{ github.ref_name }}"
